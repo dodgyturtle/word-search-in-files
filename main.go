@@ -8,25 +8,31 @@ import (
 )
 
 func wordSearch(w http.ResponseWriter, r *http.Request) {
-	var err error
+	var errJson error
+	var response []byte
+
 	params := r.URL.Query()
 	name := params.Get("word")
+
 	fsys := os.DirFS("./examples")
+
 	s := &searcher.Searcher{
 		FS: fsys,
 	}
+
 	gotFiles, err := s.Search(name)
-	var response []byte
 
 	if err != nil {
-		response, err = json.Marshal(map[string]string{"error": err.Error()})
+		response, errJson = json.Marshal(map[string]string{"error": err.Error()})
 	} else {
-		response, err = json.Marshal(gotFiles)
+		response, errJson = json.Marshal(gotFiles)
 	}
-	if err != nil {
+
+	if errJson != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
@@ -35,5 +41,4 @@ func wordSearch(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/files/search", wordSearch)
 	http.ListenAndServe(":8080", nil)
-
 }

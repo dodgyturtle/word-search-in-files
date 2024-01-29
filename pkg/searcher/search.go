@@ -20,8 +20,10 @@ func findInFiles(fs fs.FS, fileName string, word string) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	scanner := bufio.NewScanner(postFile)
 	scanner.Split(bufio.ScanWords)
+
 	for scanner.Scan() {
 		if word == scanner.Text() {
 			fileName = strings.TrimRight(fileName, ".txt")
@@ -65,12 +67,16 @@ func (s *Searcher) Search(word string) (files []string, err error) {
 		wg.Wait()
 		close(errCh)
 	}()
+
 	for err := range errCh {
 		return nil, err
 	}
+
 	if len(files) == 0 {
 		return nil, nil
 	}
+
 	sort.Strings(files)
+
 	return files, nil
 }
